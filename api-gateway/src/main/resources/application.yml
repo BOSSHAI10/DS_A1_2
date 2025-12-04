@@ -1,0 +1,191 @@
+# -----------------------------
+# Common settings (applies to all profiles)
+# -----------------------------
+spring:
+  application:
+    name: api-gateway
+
+  # WebFlux settings
+  codec:
+    max-in-memory-size: 5MB
+
+  main:
+    web-application-type: reactive
+
+  # --- AICI ESTE CONFIGURAREA DE RUTARE (GATEWAY) ---
+  cloud:
+    gateway:
+      # Permite CORS global la nivel de Gateway
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "${CORS_ALLOWED_ORIGINS:http://localhost:3000}"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      routes:
+        # Ruta pentru Auth Service (Login/Register/Delete)
+        - id: auth-service
+          uri: ${auth.base-url}
+          predicates:
+            - Path=/auth/**
+          # Gateway va trimite cererea la http://auth-service:8083/auth/...
+
+        # Ruta pentru Users Service (Admin operations)
+        - id: users-service
+          uri: ${users.base-url}
+          predicates:
+            - Path=/people/**, /users/** # Notă: Dacă controllerul tău e pe /people, dar frontend-ul cheamă /users, poți folosi filtre RewritePath
+            # Deocamdată am pus ambele path-uri să fiu sigur.
+
+        # Ruta pentru Devices Service (CRUD & Mapping)
+        - id: devices-service
+          uri: ${devices.base-url}
+          predicates:
+            - Path=/devices/**, /linked_user/**
+
+server:
+  port: 8084
+  forward-headers-strategy: framework
+
+# Base URLs for downstream services (defaults for docker network)
+auth:
+  base-url: ${AUTH_BASE_URL:http://auth-service:8083}
+users:
+  base-url: ${USERS_BASE_URL:http://users-service:8081}
+devices:
+  base-url: ${DEVICES_BASE_URL:http://devices-service:8082}
+
+# CORS settings (suplimentar pentru controllerele locale din Gateway, ex: /api/register)
+cors:
+  enabled: true
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+  allowed-headers: "Content-Type,Authorization,Idempotency-Key,X-Correlation-Id"
+  exposed-headers: "Location"
+  max-age: 3600
+
+# Resilience4j configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      registerFlow:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 30s
+        recordExceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+  retry:
+    instances:
+      registerFlow:
+        maxAttempts: 3
+        waitDuration: 200ms
+        retryExceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+
+# Actuator / Micrometer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway # Am adăugat 'gateway' pentru debug
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    enabled: false
+
+# Logging
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG # Util pentru a vedea cum se rutează cererile
+    org.springframework.web.reactive.function.client: INFO
+    io.github.resilience4j: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{correlationId}] %logger{36} - %msg%n"
+
+# Springdoc OpenAPI
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+# -----------------------------
+# DEV profile
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+server:
+  port: 8084 # Păstrăm portul 8084 pentru Gateway
+
+auth:
+  base-url: http://localhost:8083
+users:
+  base-url: http://localhost:8081
+devices:
+  base-url: http://localhost:8082
+
+cors:
+  allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: DEBUG
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+# -----------------------------
+# PROD profile
+# -----------------------------
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+server:
+  port: ${PORT:8080}
+
+auth:
+  base-url: ${AUTH_BASE_URL:http://auth-service:8083}
+users:
+  base-url: ${USERS_BASE_URL:http://users-service:8081}
+devices:
+  base-url: ${DEVICES_BASE_URL:http://devices-service:8082}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://iot-frontend.example.com}
+
+logging:
+  level:
+    root: INFO

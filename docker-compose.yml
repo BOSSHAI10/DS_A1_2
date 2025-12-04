@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      demo_net:
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: api-gateway
+    expose:
+      - "8080" # Portul intern al gateway-ului
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-gateway.rule=PathPrefix(`/`)" # Orice cerere
+      - "traefik.http.routers.api-gateway.entrypoints=web"
+      - "traefik.http.services.api-gateway.loadbalancer.server.port=8080"
+    networks:
+      demo_net:
+
+  users-db:
+    image: postgres
+    container_name: users-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: users-db
+    ports:
+      - "5433:5432"
+    volumes:
+      - users-db:/var/lib/postgresql/data
+    networks:
+      demo_net:
+
+  devices-db:
+    image: postgres
+    container_name: devices-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: devices-db
+    ports:
+      - "5434:5432"
+    volumes:
+      - devices-db:/var/lib/postgresql/data
+    networks:
+      demo_net:
+
+  auth-db:
+    image: postgres
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: auth-db
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth-db:/var/lib/postgresql/data
+    networks:
+      demo_net:
+
+  users-service:
+    build:
+      context: .                      # <--- SCHIMBAT
+      dockerfile: ./users-service/Dockerfile
+    container_name: users-service
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_IP=users-db # Nota: am corectat DB_IP sa fie numele containerului, nu 'db' generic
+      - DB_PORT=5432   # Portul intern este 5432, nu cel expus (5433)
+      - DB_DBNAME=users-db
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    networks:
+      demo_net:
+
+  devices-service:
+    build:
+      context: .                      # <--- SCHIMBAT
+      dockerfile: ./devices-service/Dockerfile
+    container_name: devices-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_IP=devices-db # Corectat
+      - DB_PORT=5432     # Corectat
+      - DB_DBNAME=devices-db
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    networks:
+      demo_net:
+
+  auth-service:
+    build:
+      context: .                      # <--- SCHIMBAT
+      dockerfile: ./auth-service/Dockerfile
+    container_name: auth-service
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_IP=auth-db    # Corectat
+      - DB_PORT=5432     # Corectat
+      - DB_DBNAME=auth-db
+      - DB_USER=postgres
+      - DB_PASSWORD=root
+    networks:
+      demo_net:
+
+volumes:
+  users-db:
+  devices-db:
+  auth-db:
+
+networks:
+  demo_net:
+    external: true
