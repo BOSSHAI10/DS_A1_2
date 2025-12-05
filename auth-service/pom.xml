@@ -8,11 +8,9 @@
     <description>Energy Platform - Authentication Service (JWT RS256)</description>
     <!--  Spring Boot BOM/Parent for dependency management  -->
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.4</version>
-        <relativePath/>
-        <!--  lookup parent from repository  -->
+        <groupId>com.example</groupId>
+        <artifactId>demo-app</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
     <properties>
         <java.version>25</java.version>

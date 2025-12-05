@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>devices-service</artifactId>
-
+    <name>devices-service</name>
 
     <dependencies>
         <dependency>
