@@ -41,6 +41,8 @@ services:
       context: .
       dockerfile: ./api-gateway/Dockerfile
     container_name: api-gateway
+    ports:
+      - "8084:8084"
     expose:
       - "8080" # Portul intern al gateway-ului
     labels:
