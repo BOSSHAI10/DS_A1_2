@@ -1,4 +1,4 @@
-FROM maven:3.9 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # 1. Copiem si instalam parintele (din root)
