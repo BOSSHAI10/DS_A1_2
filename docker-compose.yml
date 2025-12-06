@@ -20,13 +20,21 @@ services:
       demo_net:
 
   frontend:
-    ports:
-      - "5173:5173"
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
     labels:
       - "traefik.enable=true"
+      # Orice rută care nu e API merge la frontend
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
+      # Nginx ascultă pe portul 80
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
       - "traefik.http.routers.frontend.middlewares=gzip-compress@file,security-headers@file"
+    networks:
+      demo_net:
 
   api-gateway:
     build:

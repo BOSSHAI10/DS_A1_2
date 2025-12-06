@@ -1,21 +1,20 @@
-# Folosim o imagine oficială de Node.js (ușoară, bazată pe Alpine Linux)
-FROM node:20-alpine
-
-# Setăm directorul de lucru în container
+# Stage 1: Construim aplicația React cu Node
+FROM node:20-alpine as build
 WORKDIR /app
-
-# Copiem fișierele de dependențe
 COPY package*.json ./
-
-# Instalăm dependențele
 RUN npm install
-
-# Copiem restul codului sursă
 COPY . .
+# Această comandă creează folderul 'dist' cu fișierele statice optimizate
+RUN npm run build
 
-# Expunem portul pe care rulează Vite
-EXPOSE 5173
+# Stage 2: Servim aplicația cu Nginx
+FROM nginx:alpine
+# Copiem fișierele generate (dist) din etapa anterioară în folderul Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Comanda de start
-# --host este CRITIC pentru ca Docker să permită accesul din browser
-CMD ["npm", "run", "dev", "--", "--host"]
+# (Opțional) Copiem o configurare custom pentru a trata routing-ul React
+# Dacă nu ai acest fișier, poți sări peste linia asta, dar la refresh pe pagini interne vei primi 404
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
