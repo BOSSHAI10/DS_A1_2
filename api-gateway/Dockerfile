@@ -1,18 +1,20 @@
 FROM maven:3.9 AS build
+WORKDIR /app
 
-ENV TZ=UTC
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-ENV CATALINA_OPTS="-Duser.timezone=UTC"
+COPY ./pom.xml /app/pom.xml
+RUN mvn -N install
 
-COPY ./pom.xml /api-gateway/pom.xml
-WORKDIR /api-gateway
+COPY ./api-gateway/pom.xml /app/api-gateway/pom.xml
+
+WORKDIR /app/api-gateway
 RUN mvn dependency:go-offline
-COPY ./src/ /api-gateway/src
-WORKDIR /api-gateway
-RUN mvn clean install -DskipTests
+
+COPY ./api-gateway/src /app/api-gateway/src
+
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jdk
-WORKDIR /api-gateway
-COPY --from=build /api-gateway/target/demo-0.0.1-SNAPSHOT.jar /api-gateway/demo.jar
+WORKDIR /app
+COPY --from=build /app/api-gateway/target/*.jar /app/demo.jar
 EXPOSE 8084
 CMD ["java", "-jar", "demo.jar"]
