@@ -1,0 +1,24 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# EntryPoints: Unde ascultă Traefik traficul (Port 80)
+entryPoints:
+  web:
+    address: ":80"
+
+# Providers: De unde își ia Traefik configurația rutelor
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false # Nu expune containerele decât dacă au label-ul 'traefik.enable=true'
+    network: "demo_net"     # Rețeaua Docker comună
+    # ADAUGĂ ACEASTĂ SECȚIUNE:
+    file:
+      directory: "/etc/traefik/dynamic" # Traefik va citi toate fișierele .yml din acest folder
+      watch: true # Reîncarcă automat dacă modifici fișierul
+
+# Dashboard (Opțional, pentru debugging pe portul 8080)
+api:
+  dashboard: true
+  insecure: true

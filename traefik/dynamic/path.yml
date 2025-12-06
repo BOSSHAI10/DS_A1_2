@@ -1,0 +1,13 @@
+http:
+  middlewares:
+    # Middleware pentru securitate (recomandat pentru producție)
+    security-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        # sslRedirect: true # Decomentează doar dacă ai HTTPS activat
+
+    # Middleware pentru a comprima răspunsurile (face site-ul mai rapid)
+    gzip-compress:
+      compress: {}
