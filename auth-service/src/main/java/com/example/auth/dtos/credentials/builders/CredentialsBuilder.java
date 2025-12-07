@@ -14,7 +14,7 @@ public class CredentialsBuilder {
     }
 
     public static Credentials toEntity(CredentialsDetailsDTO credentialsDetailsDTO) {
-        return new Credentials(credentialsDetailsDTO.getEmail(), credentialsDetailsDTO.getPassword(), credentialsDetailsDTO.getRole());
+        return new Credentials(credentialsDetailsDTO.getEmail(), credentialsDetailsDTO.getPassword());
     }
 
 

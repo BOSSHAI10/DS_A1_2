@@ -41,9 +41,8 @@ public class RegisterController {
     public ResponseEntity<Credentials> register(@Valid @RequestBody CredentialsDetailsDTO dto) {
         return ResponseEntity.ok(credentialsService.register(
                 dto.getEmail(),
-                dto.getPassword(),
-                dto.getRole()
-        ));
+                dto.getPassword()
+                ));
     }
 
     @DeleteMapping("/{email}")

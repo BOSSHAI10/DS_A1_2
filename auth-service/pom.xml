@@ -100,7 +100,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>org.example.credentials.AuthServiceApplication</mainClass>
+                    <mainClass>com.example.auth.AuthServiceApplication</mainClass>
                 </configuration>
             </plugin>
             <!--  Compiler to Java 17  -->

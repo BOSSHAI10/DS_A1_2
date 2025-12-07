@@ -35,13 +35,13 @@ public class CredentialsService {
     }
 
     @Transactional
-    public Credentials register(String email, String rawPassword, Role role) {
+    public Credentials register(String email, String rawPassword) {
         String hash = passwordEncoder.encode(rawPassword);
 
         // Default to USER if null
-        Role assignedRole = (role != null) ? role : Role.USER;
+        // Role assignedRole = (role != null) ? role : Role.USER;
 
-        Credentials credentials = new Credentials(email, hash, assignedRole);
+        Credentials credentials = new Credentials(email, hash);
         return credentialsRepository.save(credentials);
     }
 

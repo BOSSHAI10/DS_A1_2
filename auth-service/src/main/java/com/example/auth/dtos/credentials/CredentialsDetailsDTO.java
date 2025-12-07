@@ -13,24 +13,12 @@ public class CredentialsDetailsDTO {
     @NotBlank(message = "password is required")
     private String password;
 
-    private Role role; // Add this
-
     public CredentialsDetailsDTO() {}
 
     public CredentialsDetailsDTO(String email, String password) {
         this.email = email;
         this.password = password;
     }
-
-    public CredentialsDetailsDTO(String email, String password, Role role) {
-        this.email = email;
-        this.password = password;
-        this.role = role;
-    }
-
-    public Role getRole() { return role; }
-
-    public void setRole(Role role) { this.role = role;}
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

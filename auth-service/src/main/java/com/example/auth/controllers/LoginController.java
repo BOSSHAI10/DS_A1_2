@@ -45,8 +45,8 @@ public class LoginController {
         // 2. Generate Token passing the Enum name (e.g., "ADMIN")
         String token = jwtUtil.generateToken(
                 user.getEmail(),
-                user.getId().toString(),
-                user.getRole().name() // <--- Convert Enum to String here
+                user.getId().toString()
+                 // <--- Convert Enum to String here
         );
 
         return ResponseEntity.ok(token);

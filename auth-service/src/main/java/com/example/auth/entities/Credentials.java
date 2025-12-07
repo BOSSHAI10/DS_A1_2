@@ -40,19 +40,13 @@ public class Credentials implements Serializable{
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Maps to the Postgres 'enum_roles' type
-    @Column(name = "role", nullable = false, columnDefinition = "enum_roles")
-    private Role role;
-
     public Credentials() {
     }
 
     // Updated Constructor
-    public Credentials(String email, String password, Role role) {
+    public Credentials(String email, String password) {
         this.email = email;
         this.password = password;
-        this.role = role;
     }
 
     public UUID getId() {
@@ -62,11 +56,6 @@ public class Credentials implements Serializable{
     public void setId(UUID id) {
         this.id = id;
     }
-
-    // Getters and Setters
-    public Role getRole() { return role; }
-
-    public void setRole(Role role) { this.role = role; }
 
     public String getEmail() {
         return email;
