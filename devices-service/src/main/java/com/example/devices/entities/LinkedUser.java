@@ -1,5 +1,6 @@
 package com.example.devices.entities;
 
+import com.example.devices.entities.roles.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -30,7 +31,7 @@ public class LinkedUser {
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "role", nullable = false, columnDefinition = "enum_roles")
+    @Column(name = "role", nullable = false)
     private Role role;
 
     // FIX THIS: Add the annotation to map the list

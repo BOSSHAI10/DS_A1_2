@@ -37,7 +37,7 @@ public class User implements Serializable{
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)  // tells Hibernate this is a named DB enum
-    @Column(name = "role", nullable = false, columnDefinition = "enum_roles")
+    @Column(name = "role", nullable = false)
     private Role role;
 
     public User() {

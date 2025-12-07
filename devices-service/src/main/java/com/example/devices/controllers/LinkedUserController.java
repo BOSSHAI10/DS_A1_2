@@ -2,7 +2,7 @@ package com.example.devices.controllers;
 
 import com.example.devices.entities.Device;
 import com.example.devices.entities.LinkedUser;
-import com.example.devices.entities.Role;
+import com.example.devices.entities.roles.Role;
 import com.example.devices.repositories.DeviceRepository;
 import com.example.devices.repositories.LinkedUserRepository;
 import com.example.devices.services.UsersServiceClient;

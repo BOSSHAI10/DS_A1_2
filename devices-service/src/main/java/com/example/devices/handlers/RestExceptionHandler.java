@@ -29,9 +29,20 @@ import java.util.List;
 import java.util.Set;
 
 @RestControllerAdvice
-public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+public class RestExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+
+    private ResponseEntity<Object> handleExceptionInternal(
+            Exception ex,
+            Object body,
+            HttpHeaders headers,
+            HttpStatus status,
+            WebRequest request) {
+
+        // Pur și simplu returnăm răspunsul construit
+        return new ResponseEntity<>(body, headers, status);
+    }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(
@@ -55,7 +66,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), status, request);
     }
 
-    @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             HttpHeaders headers,
@@ -103,7 +113,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), status, request);
     }
 
-    @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex,
             HttpHeaders headers,
@@ -122,7 +131,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, headers, httpStatus, request);
     }
 
-    @Override
     protected ResponseEntity<Object> handleMissingServletRequestParameter(
             MissingServletRequestParameterException ex,
             HttpHeaders headers,
@@ -184,7 +192,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, body, new HttpHeaders(), ex.getStatus(), request);
     }
 
-    @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 
@@ -213,5 +220,28 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 request.getDescription(false)
         );
         return handleExceptionInternal(ex, body, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex) {
+
+        List<String> details = new ArrayList<>();
+        for (ObjectError err : ex.getBindingResult().getAllErrors()) {
+            if (err instanceof FieldError fe) {
+                details.add(fe.getField() + ": " + fe.getDefaultMessage());
+            } else {
+                details.add(err.getObjectName() + ": " + err.getDefaultMessage());
+            }
+        }
+
+        return new ResponseEntity<>(
+                new ExceptionHandlerResponseDTO(
+                        "Validation failed", "Bad Request", 400,
+                        MethodArgumentNotValidException.class.getSimpleName(),
+                        details, ""
+                ),
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

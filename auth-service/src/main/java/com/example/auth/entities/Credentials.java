@@ -28,7 +28,6 @@ public class Credentials implements Serializable{
     @JdbcTypeCode(SqlTypes.UUID)
     private UUID id;
 
-
     @Email
     @NotBlank
     @Size(max = 255)
